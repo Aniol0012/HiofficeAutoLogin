@@ -5,8 +5,10 @@
 
 This project is a browser extension designed to automate the login process for Hioffice web applications.
 It autofills the login form fields (email, password, company, and remember me checkbox) and attempts to click the login
-button,
-making the login experience faster and more convenient for the user.
+button, making the login experience faster and more convenient for the user.
+
+![popup-preview](https://github.com/user-attachments/assets/6b4eeee6-e2fe-4f02-9864-de3fcacef037)
+
 
 ## Author
 
@@ -50,8 +52,8 @@ TypeScript files into JavaScript.
    npx tsc
    ```
 
-   > [!NOTE] 
-   > You should run this command every time you make changes to your TypeScript files.*
+> [!NOTE] 
+> You should run this command every time you make changes to your TypeScript files.*
 
 4. **Load the Extension in Your Browser (Edge/Chrome):**
 
