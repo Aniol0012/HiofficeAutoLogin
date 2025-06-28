@@ -55,7 +55,7 @@ Before installing, ensure you have all these prerequisites installed
    cd HiofficeAutoLogin
    ```
 
-2.**Install Dependencies:**
+2. **Install Dependencies:**
 
    ```bash
    npm install
@@ -65,7 +65,7 @@ Before installing, ensure you have all these prerequisites installed
    yarn install
    ```
 
-3.**Compile TypeScript:**
+3. **Compile TypeScript:**
    This command compiles your TypeScript source files (`.ts`) into JavaScript files (`.js`) in the `dist/` directory.
 
    ```bash
