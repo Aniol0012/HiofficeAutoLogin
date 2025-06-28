@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 let MAX_LOGIN_ATTEMPTS = 3; // Default value, will be overridden by settings
 let loginAttempts = 0;
 let lastKnownUrl = window.location.href; // Stores the URL to detect changes
@@ -133,6 +132,5 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', autoLoginOnPageLoad);
 }
 else {
-    autoLoginOnPageLoad().then(_ => {
-    });
+    autoLoginOnPageLoad();
 }

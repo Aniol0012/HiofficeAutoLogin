@@ -1,5 +1,3 @@
-import { Result } from "./content_script";
-
 interface LoginCredentials {
     email: string;
     password?: string;
@@ -14,7 +12,7 @@ interface ExtensionSettings {
     maxRetries?: number;
 }
 
-const MESSAGE_DURATION: number = 3 // Message duration in seconds
+const MESSAGE_DURATION: number = 3; // Message duration in seconds
 
 document.addEventListener('DOMContentLoaded', () => {
     const extensionEnabledCheckbox = document.getElementById('extensionEnabled') as HTMLInputElement;
@@ -24,8 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyInput = document.getElementById('company') as HTMLInputElement;
     const rememberMeCheckbox = document.getElementById('rememberMe') as HTMLInputElement;
     const maxRetriesInput = document.getElementById('maxRetries') as HTMLInputElement;
-    const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
-    const clearButton = document.getElementById('clearButton') as HTMLButtonElement;
+    // Ensure these IDs match the HTML
+    const saveButton = document.getElementById('saveButton') as HTMLButtonElement; // Correct ID
+    const clearButton = document.getElementById('clearButton') as HTMLButtonElement; // Correct ID
     const messageDiv = document.getElementById('message') as HTMLDivElement;
 
     // Function to display messages
@@ -40,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load saved settings and credentials
-    chrome.storage.sync.get(['extensionSettings'], (result: Result) => {
+    // Use chrome.storage.StorageItems which is the return type for .get
+    chrome.storage.sync.get(['extensionSettings'], (result) => {
         const settings: ExtensionSettings = result.extensionSettings || {
             enabled: false,
             targetUrl: '',
@@ -72,22 +72,35 @@ document.addEventListener('DOMContentLoaded', () => {
             maxRetries: parseInt(maxRetriesInput.value, 10) || 3
         };
 
-        // Validate fields. Show a message, but don't prevent saving the configuration.
-        if (!settings.targetUrl && settings.enabled) {
-            showMessage('If the extension is enabled, the Target URL is mandatory for auto-execution on page load.', true);
-        }
-        if (!settings.credentials.email && settings.enabled) {
-            showMessage('If the extension is enabled, the Email is mandatory for auto-execution on page load.', true);
+        // Validate fields for a better user experience, but allow saving empty fields
+        // if extension is not enabled, or if user wants to save partially.
+        // The content script will handle the actual validation for auto-login.
+        let validationMessage: string = '';
+        let isValidationError: boolean = false;
+
+        if (settings.enabled) {
+            if (!settings.targetUrl) {
+                validationMessage += 'Si l\'extensió està activada, l\'URL de la pàgina de login és obligatòria. ';
+                isValidationError = true;
+            }
+            if (!settings.credentials.email) {
+                validationMessage += 'Si l\'extensió està activada, l\'Email és obligatori. ';
+                isValidationError = true;
+            }
         }
 
         // Save settings to storage
         chrome.storage.sync.set({extensionSettings: settings}, (): void => {
-            showMessage('S\'ha guardat la configuració');
+            if (validationMessage) {
+                showMessage(`S'ha guardat la configuració, però: ${validationMessage}`, isValidationError);
+            } else {
+                showMessage('S\'ha guardat la configuració');
+            }
         });
     });
 
     clearButton.addEventListener('click', (): void => {
-        chrome.storage.sync.get(['extensionSettings'], (result: Result): void => {
+        chrome.storage.sync.get(['extensionSettings'], (result): void => {
             const settings: ExtensionSettings = result.extensionSettings || {
                 enabled: false,
                 targetUrl: '',

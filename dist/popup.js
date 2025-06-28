@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const MESSAGE_DURATION = 3; // Message duration in seconds
 document.addEventListener('DOMContentLoaded', () => {
     const extensionEnabledCheckbox = document.getElementById('extensionEnabled');
@@ -9,8 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyInput = document.getElementById('company');
     const rememberMeCheckbox = document.getElementById('rememberMe');
     const maxRetriesInput = document.getElementById('maxRetries');
-    const saveButton = document.getElementById('saveButton');
-    const clearButton = document.getElementById('clearButton');
+    // Ensure these IDs match the HTML
+    const saveButton = document.getElementById('saveButton'); // Correct ID
+    const clearButton = document.getElementById('clearButton'); // Correct ID
     const messageDiv = document.getElementById('message');
     // Function to display messages
     function showMessage(text, isError = false) {
@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, MESSAGE_DURATION * 1000);
     }
     // Load saved settings and credentials
+    // Use chrome.storage.StorageItems which is the return type for .get
     chrome.storage.sync.get(['extensionSettings'], (result) => {
         const settings = result.extensionSettings || {
             enabled: false,
@@ -51,16 +52,29 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: credentials,
             maxRetries: parseInt(maxRetriesInput.value, 10) || 3
         };
-        // Validate fields. Show a message, but don't prevent saving the configuration.
-        if (!settings.targetUrl && settings.enabled) {
-            showMessage('If the extension is enabled, the Target URL is mandatory for auto-execution on page load.', true);
-        }
-        if (!settings.credentials.email && settings.enabled) {
-            showMessage('If the extension is enabled, the Email is mandatory for auto-execution on page load.', true);
+        // Validate fields for a better user experience, but allow saving empty fields
+        // if extension is not enabled, or if user wants to save partially.
+        // The content script will handle the actual validation for auto-login.
+        let validationMessage = '';
+        let isValidationError = false;
+        if (settings.enabled) {
+            if (!settings.targetUrl) {
+                validationMessage += 'Si l\'extensió està activada, l\'URL de la pàgina de login és obligatòria. ';
+                isValidationError = true;
+            }
+            if (!settings.credentials.email) {
+                validationMessage += 'Si l\'extensió està activada, l\'Email és obligatori. ';
+                isValidationError = true;
+            }
         }
         // Save settings to storage
         chrome.storage.sync.set({ extensionSettings: settings }, () => {
-            showMessage('S\'ha guardat la configuració');
+            if (validationMessage) {
+                showMessage(`S'ha guardat la configuració, però: ${validationMessage}`, isValidationError);
+            }
+            else {
+                showMessage('S\'ha guardat la configuració');
+            }
         });
     });
     clearButton.addEventListener('click', () => {

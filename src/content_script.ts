@@ -12,10 +12,6 @@ interface ExtensionSettings {
     maxRetries?: number; // New field for max retries
 }
 
-export type Result = {
-    [key: string]: any;
-}
-
 let MAX_LOGIN_ATTEMPTS: number = 3; // Default value, will be overridden by settings
 let loginAttempts: number = 0;
 let lastKnownUrl: string = window.location.href; // Stores the URL to detect changes
@@ -131,7 +127,7 @@ async function autoLoginOnPageLoad() {
     loginAttempts = 0; // Reset attempts on each page load
     lastKnownUrl = window.location.href; // Update reference URL
 
-    const result: Result = await chrome.storage.sync.get(['extensionSettings']);
+    const result = await chrome.storage.sync.get(['extensionSettings']);
     const settings: ExtensionSettings = result.extensionSettings || {
         enabled: false,
         targetUrl: '',
@@ -162,6 +158,5 @@ async function autoLoginOnPageLoad() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', autoLoginOnPageLoad);
 } else {
-    autoLoginOnPageLoad().then(_ => {
-    });
+    autoLoginOnPageLoad();
 }
