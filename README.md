@@ -1,7 +1,6 @@
 # Hioffice Auto Login Extension
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/Aniol0012/HiofficeAutoLogin?style=plastic&color=lightgreen)
-![GitHub repo size](https://img.shields.io/github/repo-size/Aniol0012/HiofficeAutoLogin?style=plastic&color=lightseagreen)
 
 This project is a browser extension designed to automate the login process for Hioffice web applications.
 It autofills the login form fields (email, password, company, and remember me checkbox) and attempts to click the login
