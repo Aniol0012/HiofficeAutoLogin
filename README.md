@@ -40,7 +40,7 @@ Then, follow these simple steps:
 Finally, open the configuration menu on the extension and fill all the fields. 
 The extension will automatically attempt to fill the form and log you in.
 
-### Steps to contribute
+## How to contribute
 
 #### Prerequisites
 
