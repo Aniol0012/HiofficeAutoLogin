@@ -7,7 +7,7 @@ This project is a browser extension designed to automate the login process for H
 It autofills the login form fields (email, password, company, and remember me checkbox) and attempts to click the login
 button, making the login experience faster and more convenient for the user.
 
-![popup-preview](https://github.com/user-attachments/assets/6b4eeee6-e2fe-4f02-9864-de3fcacef037)
+![popup-preview](https://github.com/user-attachments/assets/95337105-1117-4aa8-a129-ad03f7ddefe7)
 
 
 ## Author
