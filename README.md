@@ -1,5 +1,6 @@
 # Hioffice Auto Login Extension
 
+![Typescript](https://img.shields.io/badge/TypeScript-3178C6?style=plastic&for-the-badge&logo=typescript&logoColor=white)
 ![GitHub last commit](https://img.shields.io/github/last-commit/Aniol0012/HiofficeAutoLogin?style=plastic&color=lightgreen)
 
 This project is a browser extension designed to automate the login process for Hioffice web applications.
