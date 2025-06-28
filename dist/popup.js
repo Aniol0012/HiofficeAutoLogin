@@ -8,9 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyInput = document.getElementById('company');
     const rememberMeCheckbox = document.getElementById('rememberMe');
     const maxRetriesInput = document.getElementById('maxRetries');
-    // Ensure these IDs match the HTML
-    const saveButton = document.getElementById('saveButton'); // Correct ID
-    const clearButton = document.getElementById('clearButton'); // Correct ID
+    const saveButton = document.getElementById('saveButton');
+    const clearButton = document.getElementById('clearButton');
     const messageDiv = document.getElementById('message');
     // Function to display messages
     function showMessage(text, isError = false) {
@@ -23,13 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, MESSAGE_DURATION * 1000);
     }
     // Load saved settings and credentials
-    // Use chrome.storage.StorageItems which is the return type for .get
     chrome.storage.sync.get(['extensionSettings'], (result) => {
         const settings = result.extensionSettings || {
             enabled: false,
             targetUrl: '',
             credentials: {},
-            maxRetries: 3 // Default value for maxRetries
+            maxRetries: 3
         };
         extensionEnabledCheckbox.checked = settings.enabled;
         targetUrlInput.value = settings.targetUrl || '';
@@ -38,6 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
         companyInput.value = settings.credentials.company || '';
         rememberMeCheckbox.checked = settings.credentials.rememberMe || false;
         maxRetriesInput.value = (settings.maxRetries || 3).toString();
+    });
+    // Event listener to ensure a value is always present for maxRetriesInput
+    maxRetriesInput.addEventListener('blur', () => {
+        // If the input is empty or invalid after losing focus, set it to the minimum allowed value (1)
+        if (!maxRetriesInput.value || parseInt(maxRetriesInput.value, 10) < 1 || isNaN(parseInt(maxRetriesInput.value, 10))) {
+            maxRetriesInput.value = '1'; // Ensure minimum of 1 retry
+            showMessage('El número màxim de reintents no pot ser inferior a 1.', true);
+        }
     });
     saveButton.addEventListener('click', () => {
         const credentials = {
