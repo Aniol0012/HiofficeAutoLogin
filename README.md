@@ -9,24 +9,44 @@ button, making the login experience faster and more convenient for the user.
 
 ![popup-preview](https://github.com/user-attachments/assets/6b4eeee6-e2fe-4f02-9864-de3fcacef037)
 
-
 ## Author
 
 **Aniol0012** (Aniol Serrano)
 > [!IMPORTANT]
 > GitHub: [Aniol0012 (Aniol Serrano)](https://github.com/Aniol0012)
 
-## Installation and Compilation
+## User installation
 
-This extension is developed using TypeScript, so you'll need Node.js and npm (or yarn) installed to compile the
-TypeScript files into JavaScript.
+To use this extension, head up into [releases page](https://github.com/Aniol0012/HiofficeAutoLogin/releases) and use
+the latest version or download the project by cloning it.
+Then, follow these simple steps:
 
-### Prerequisites
+1. **Go to extensions page on your navigator**:
+    - For **Edge** go to: [`edge://extensions`](edge://extensions)
+    - For **Chrome** go to: [`chrome://extensions`](chrome://extensions)
 
+1. **Enable Developer Mode:** Toggle on "Developer mode" (usually in the top-right corner).
+
+1. **Load Unpacked Extension:** Click on "Load unpacked" (or "Load temporary add-on" in some browsers).
+
+1. **Select the Project Directory:** Navigate to your project folder and select the root directory (where
+   `manifest.json` is located).
+
+1. **The extension should now appear** in your list of installed extensions.
+
+> [!TIP]
+> Pin the extension, so it's easier to configure it.
+
+Finally, open the configuration menu on the extension and fill all the fields. 
+The extension will automatically attempt to fill the form and log you in.
+
+### Steps to contribute
+
+#### Prerequisites
+
+Before installing, ensure you have all these prerequisites installed
 * Node.js (LTS version recommended)
 * npm (comes with Node.js) or yarn
-
-### Steps to Get Started
 
 1. **Clone the Repository:**
 
@@ -35,7 +55,7 @@ TypeScript files into JavaScript.
    cd HiofficeAutoLogin
    ```
 
-2. **Install Dependencies:**
+2.**Install Dependencies:**
 
    ```bash
    npm install
@@ -45,35 +65,18 @@ TypeScript files into JavaScript.
    yarn install
    ```
 
-3. **Compile TypeScript:**
+3.**Compile TypeScript:**
    This command compiles your TypeScript source files (`.ts`) into JavaScript files (`.js`) in the `dist/` directory.
 
    ```bash
    npx tsc
    ```
 
-> [!NOTE] 
-> You should run this command every time you make changes to your TypeScript files.*
+> [!NOTE]
+> You should run this command every time you make changes to your TypeScript files.
 
-4. **Load the Extension in Your Browser (Edge/Chrome):**
+> [!IMPORTANT]
+> Each time you modify the source code, the entire extension must be reloaded.
+> So reload it via navigator extensions.
 
-    1. **Open Extension Management:**
-
-        * For **Microsoft Edge**: Go to [`edge://extensions`](edge://extensions)
-        * For **Google Chrome**: Go to [`chrome://extensions`](chrome://extensions)
-
-    1. **Enable Developer Mode:** Toggle on "Developer mode" (usually in the top-right corner).
-
-    1. **Load Unpacked Extension:** Click on "Load unpacked" (or "Load temporary add-on" in some browsers).
-
-    1. **Select the Project Directory:** Navigate to your project folder and select the root directory (where
-       `manifest.json` is located).
-
-    1. **The extension should now appear** in your list of installed extensions.
-
-## Usage
-
-Once configured and enabled, simply navigate to the specified Hioffice login URL.
-The extension will automatically attempt to fill the form and log you in.
-Check the browser's developer console (F12, then "Console" tab) on the login page for debugging messages from the
-content script.
+4. **Add the extension into your navigator**, as explained on [User installation](#user-installation).
