@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Configuració Hioffice Auto Login</title>
+    <meta charset="UTF-8">
+    <style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 15px;
+				width: 320px;
+				background-color: #f4f7f6;
+				color: #333;
+			}
+
+			h2 {
+				text-align: center;
+				color: #007bff;
+				margin-bottom: 20px;
+			}
+
+			label {
+				display: block;
+				margin-bottom: 8px;
+				font-weight: bold;
+			}
+
+			input[type="text"],
+			input[type="password"] {
+				width: calc(100% - 20px);
+				padding: 10px;
+				margin-bottom: 15px;
+				border: 1px solid #ddd;
+				border-radius: 5px;
+				box-sizing: border-box;
+			}
+
+			input[type="checkbox"] {
+				margin-right: 8px;
+				transform: scale(1.2);
+			}
+
+			.checkbox-container {
+				display: flex;
+				align-items: center;
+				margin-bottom: 15px;
+			}
+
+			.checkbox-container label {
+				display: inline;
+				margin-top: 8px;
+			}
+
+			button {
+				background-color: #007bff;
+				color: white;
+				padding: 12px 18px;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				margin-top: 10px;
+				width: 100%;
+				font-size: 16px;
+				transition: background-color 0.2s ease;
+			}
+
+			button:hover {
+				background-color: #0056b3;
+			}
+
+			#clearButton {
+				background-color: #dc3545;
+				margin-top: 5px;
+			}
+
+			#clearButton:hover {
+				background-color: #c82333;
+			}
+
+			#message {
+				margin-top: 15px;
+				padding: 10px;
+				border-radius: 5px;
+				background-color: #e9f7ef;
+				color: #28a745;
+				text-align: center;
+				display: none;
+			}
+    </style>
+</head>
+<body>
+<h2>Configuració Hioffice Auto Login</h2>
+
+<div class="checkbox-container">
+    <input type="checkbox" id="extensionEnabled">
+    <label for="extensionEnabled">Activar Auto-Login</label>
+</div>
+
+<label for="targetUrl">URL de la Pàgina de Login:</label>
+<input type="text" id="targetUrl" placeholder="https://exemple.com/login">
+
+<label for="email">EMail del usuario:</label>
+<input type="text" id="email" placeholder="email@example.com">
+
+<label for="password">Contraseña:</label>
+<input type="password" id="password" placeholder="Contraseña">
+
+<label for="company">Empresa:</label>
+<input type="text" id="company" placeholder="Número de l'empresa">
+
+<div class="checkbox-container">
+    <input type="checkbox" id="rememberMe">
+    <label for="rememberMe">Marcar <i>check</i> de recordar credencials</label>
+</div>
+
+<div id="message"></div>
+<button id="saveButton">Guardar Configuració</button>
+<button id="clearButton">Netejar Credencials</button>
+
+<script src="dist/popup.js"></script>
+</body>
+</html>

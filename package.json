@@ -1,0 +1,17 @@
+{
+  "name": "hiofficeautologin",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.328",
+    "typescript": "^5.8.3"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
