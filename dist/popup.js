@@ -1,4 +1,6 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const MESSAGE_DURATION = 3; // Message duration in seconds
 document.addEventListener('DOMContentLoaded', () => {
     const extensionEnabledCheckbox = document.getElementById('extensionEnabled');
     const targetUrlInput = document.getElementById('targetUrl');
@@ -6,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('password');
     const companyInput = document.getElementById('company');
     const rememberMeCheckbox = document.getElementById('rememberMe');
+    const maxRetriesInput = document.getElementById('maxRetries');
     const saveButton = document.getElementById('saveButton');
     const clearButton = document.getElementById('clearButton');
     const messageDiv = document.getElementById('message');
@@ -17,14 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.style.display = 'block';
         setTimeout(() => {
             messageDiv.style.display = 'none';
-        }, 3000);
+        }, MESSAGE_DURATION * 1000);
     }
     // Load saved settings and credentials
     chrome.storage.sync.get(['extensionSettings'], (result) => {
         const settings = result.extensionSettings || {
             enabled: false,
             targetUrl: '',
-            credentials: {}
+            credentials: {},
+            maxRetries: 3 // Default value for maxRetries
         };
         extensionEnabledCheckbox.checked = settings.enabled;
         targetUrlInput.value = settings.targetUrl || '';
@@ -32,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         passwordInput.value = settings.credentials.password || '';
         companyInput.value = settings.credentials.company || '';
         rememberMeCheckbox.checked = settings.credentials.rememberMe || false;
+        maxRetriesInput.value = (settings.maxRetries || 3).toString();
     });
     saveButton.addEventListener('click', () => {
         const credentials = {
@@ -43,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const settings = {
             enabled: extensionEnabledCheckbox.checked,
             targetUrl: targetUrlInput.value.trim(),
-            credentials: credentials
+            credentials: credentials,
+            maxRetries: parseInt(maxRetriesInput.value, 10) || 3
         };
         // Validate fields. Show a message, but don't prevent saving the configuration.
         if (!settings.targetUrl && settings.enabled) {
@@ -54,9 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Save settings to storage
         chrome.storage.sync.set({ extensionSettings: settings }, () => {
-            showMessage('Configuration and credentials saved!');
-            // NO AUTO_LOGIN message sent from here anymore.
-            // The auto-login will now only trigger on page load based on URL matching.
+            showMessage('S\'ha guardat la configuració');
         });
     });
     clearButton.addEventListener('click', () => {
@@ -64,15 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings = result.extensionSettings || {
                 enabled: false,
                 targetUrl: '',
-                credentials: {}
+                credentials: {},
+                maxRetries: 3
             };
             settings.credentials = { email: '', password: '', company: '', rememberMe: false };
+            // Only clear credentials, not the maxRetries setting
             chrome.storage.sync.set({ extensionSettings: settings }, () => {
                 emailInput.value = '';
                 passwordInput.value = '';
                 companyInput.value = '';
                 rememberMeCheckbox.checked = false;
-                showMessage('Credentials cleared!');
+                showMessage('Credencials netejades!');
             });
         });
     });
