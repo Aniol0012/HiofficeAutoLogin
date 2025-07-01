@@ -10,6 +10,8 @@ interface ExtensionSettings {
     targetUrl: string;
     credentials: LoginCredentials;
     maxRetries?: number;
+    redirectEnabled?: boolean;
+    redirectUrls?: string[];
 }
 
 const MESSAGE_DURATION: number = 3; // Message duration in seconds
@@ -17,11 +19,14 @@ const MESSAGE_DURATION: number = 3; // Message duration in seconds
 document.addEventListener('DOMContentLoaded', () => {
     const extensionEnabledCheckbox = document.getElementById('extensionEnabled') as HTMLInputElement;
     const targetUrlInput = document.getElementById('targetUrl') as HTMLInputElement;
+    const targetUrlInput2 = document.getElementById('targetUrl2') as HTMLInputElement;
     const emailInput = document.getElementById('email') as HTMLInputElement;
     const passwordInput = document.getElementById('password') as HTMLInputElement;
     const companyInput = document.getElementById('company') as HTMLInputElement;
     const rememberMeCheckbox = document.getElementById('rememberMe') as HTMLInputElement;
     const maxRetriesInput = document.getElementById('maxRetries') as HTMLInputElement;
+    const redirectUrlsContainer = document.getElementById('redirectUrlsContainer') as HTMLElement;
+    const redirectEnabledCheckbox = document.getElementById('redirectEnabled') as HTMLInputElement;
     const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
     const clearButton = document.getElementById('clearButton') as HTMLButtonElement;
     const messageDiv = document.getElementById('message') as HTMLDivElement;
@@ -42,17 +47,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const settings: ExtensionSettings = result.extensionSettings || {
             enabled: false,
             targetUrl: '',
+            targetUrl2: '',
             credentials: {},
-            maxRetries: 3
+            maxRetries: 3,
+            redirectUrls: [],
         };
 
         extensionEnabledCheckbox.checked = settings.enabled;
         targetUrlInput.value = settings.targetUrl || '';
+        targetUrlInput2.value = settings.targetUrl2 || '';
         emailInput.value = settings.credentials.email || '';
         passwordInput.value = settings.credentials.password || '';
         companyInput.value = settings.credentials.company || '';
         rememberMeCheckbox.checked = settings.credentials.rememberMe || false;
         maxRetriesInput.value = (settings.maxRetries || 3).toString();
+        redirectEnabledCheckbox.checked = settings.redirectEnabled || false;
+
+        if (settings.redirectUrls && settings.redirectUrls.length > 0 && redirectUrlsContainer) {
+            redirectUrlsContainer.innerHTML = '';
+            settings.redirectUrls.forEach(url => {
+                const row = document.createElement('div');
+                row.className = 'redirect-url-row';
+                row.innerHTML = `<input type="text" class="redirectUrlInput" value="${url}" placeholder="https://localhost:8000/">`;
+                redirectUrlsContainer.appendChild(row);
+            });
+        }
     });
 
     // Event listener to ensure a value is always present for maxRetriesInput
@@ -72,11 +91,17 @@ document.addEventListener('DOMContentLoaded', () => {
             rememberMe: rememberMeCheckbox.checked
         };
 
+        const redirectUrlInputs = document.querySelectorAll('.redirectUrlInput') as NodeListOf<HTMLInputElement>;
+        const redirectUrls = Array.from(redirectUrlInputs).map(input => input.value.trim()).filter(Boolean);
+
         const settings: ExtensionSettings = {
             enabled: extensionEnabledCheckbox.checked,
             targetUrl: targetUrlInput.value.trim(),
+            targetUrl2: targetUrlInput2.value.trim(),
             credentials: credentials,
-            maxRetries: parseInt(maxRetriesInput.value, 10) || 3
+            maxRetries: parseInt(maxRetriesInput.value, 10) || 3,
+            redirectEnabled: redirectEnabledCheckbox.checked,
+            redirectUrls: redirectUrls
         };
 
         // Validate fields for a better user experience, but allow saving empty fields
@@ -111,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings: ExtensionSettings = result.extensionSettings || {
                 enabled: false,
                 targetUrl: '',
+                targetUrl2: '',
                 credentials: {},
                 maxRetries: 3
             };

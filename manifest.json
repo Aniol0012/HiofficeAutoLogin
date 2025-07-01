@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Hioffice Auto Login",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Auto-fills login forms for Hioffice.",
   "permissions": [
     "storage",

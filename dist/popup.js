@@ -3,11 +3,14 @@ const MESSAGE_DURATION = 3; // Message duration in seconds
 document.addEventListener('DOMContentLoaded', () => {
     const extensionEnabledCheckbox = document.getElementById('extensionEnabled');
     const targetUrlInput = document.getElementById('targetUrl');
+    const targetUrlInput2 = document.getElementById('targetUrl2');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const companyInput = document.getElementById('company');
     const rememberMeCheckbox = document.getElementById('rememberMe');
     const maxRetriesInput = document.getElementById('maxRetries');
+    const redirectUrlsContainer = document.getElementById('redirectUrlsContainer');
+    const redirectEnabledCheckbox = document.getElementById('redirectEnabled');
     const saveButton = document.getElementById('saveButton');
     const clearButton = document.getElementById('clearButton');
     const messageDiv = document.getElementById('message');
@@ -26,16 +29,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const settings = result.extensionSettings || {
             enabled: false,
             targetUrl: '',
+            targetUrl2: '',
             credentials: {},
-            maxRetries: 3
+            maxRetries: 3,
+            redirectUrls: [],
         };
         extensionEnabledCheckbox.checked = settings.enabled;
         targetUrlInput.value = settings.targetUrl || '';
+        targetUrlInput2.value = settings.targetUrl2 || '';
         emailInput.value = settings.credentials.email || '';
         passwordInput.value = settings.credentials.password || '';
         companyInput.value = settings.credentials.company || '';
         rememberMeCheckbox.checked = settings.credentials.rememberMe || false;
         maxRetriesInput.value = (settings.maxRetries || 3).toString();
+        redirectEnabledCheckbox.checked = settings.redirectEnabled || false;
+        if (settings.redirectUrls && settings.redirectUrls.length > 0 && redirectUrlsContainer) {
+            redirectUrlsContainer.innerHTML = '';
+            settings.redirectUrls.forEach(url => {
+                const row = document.createElement('div');
+                row.className = 'redirect-url-row';
+                row.innerHTML = `<input type="text" class="redirectUrlInput" value="${url}" placeholder="https://localhost:8000/">`;
+                redirectUrlsContainer.appendChild(row);
+            });
+        }
     });
     // Event listener to ensure a value is always present for maxRetriesInput
     maxRetriesInput.addEventListener('blur', () => {
@@ -52,11 +68,16 @@ document.addEventListener('DOMContentLoaded', () => {
             company: companyInput.value.trim(),
             rememberMe: rememberMeCheckbox.checked
         };
+        const redirectUrlInputs = document.querySelectorAll('.redirectUrlInput');
+        const redirectUrls = Array.from(redirectUrlInputs).map(input => input.value.trim()).filter(Boolean);
         const settings = {
             enabled: extensionEnabledCheckbox.checked,
             targetUrl: targetUrlInput.value.trim(),
+            targetUrl2: targetUrlInput2.value.trim(),
             credentials: credentials,
-            maxRetries: parseInt(maxRetriesInput.value, 10) || 3
+            maxRetries: parseInt(maxRetriesInput.value, 10) || 3,
+            redirectEnabled: redirectEnabledCheckbox.checked,
+            redirectUrls: redirectUrls
         };
         // Validate fields for a better user experience, but allow saving empty fields
         // if extension is not enabled, or if user wants to save partially.
@@ -88,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings = result.extensionSettings || {
                 enabled: false,
                 targetUrl: '',
+                targetUrl2: '',
                 credentials: {},
                 maxRetries: 3
             };

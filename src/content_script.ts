@@ -8,37 +8,38 @@ interface LoginCredentials {
 interface ExtensionSettings {
     enabled: boolean;
     targetUrl: string;
+    targetUrl2: string;
     credentials: LoginCredentials;
-    maxRetries?: number; // New field for max retries
+    maxRetries?: number;
+    redirectEnabled?: boolean;
+    redirectUrls?: string[];
 }
 
-let MAX_LOGIN_ATTEMPTS: number = 3; // Default value, will be overridden by settings
+const DEFAULT_MAX_LOGIN_ATTEMPTS: number = 3; // Default value, will be overridden by settings
+const SECONDS_DELAY_BETWEEN_ATTEMPTS = 3;
+
+let maxLoginAttempts: number = DEFAULT_MAX_LOGIN_ATTEMPTS;
 let loginAttempts: number = 0;
 let lastKnownUrl: string = window.location.href; // Stores the URL to detect changes
 
 // Function to fill form fields and attempt login
-function fillLoginForm(credentials: LoginCredentials, attempt: number = 1) {
-    console.log(`Attempting to fill form and log in (Attempt ${attempt}/${MAX_LOGIN_ATTEMPTS}):`, credentials);
+function fillLoginForm(credentials: LoginCredentials, attempt: number = 1): void {
+    console.log(`Attempting to fill form and log in (Attempt ${attempt}/${maxLoginAttempts}):`, credentials);
 
     // Selectors based on the image IDs/Placeholders
     const emailInput = document.getElementById('eUsuario') as HTMLInputElement;
     const passwordInput = document.getElementById('ePassword') as HTMLInputElement;
     const companyInput = document.querySelector('input[placeholder="Empresa"]') as HTMLInputElement;
     const rememberMeToggle = document.querySelector('input[type="checkbox"][role="switch"]') as HTMLInputElement;
-
-    // Login Button: Robust selection by button text
     const loginButton = document.querySelector('input[type="submit"][value="Login"]') as HTMLInputElement;
-
 
     let filledCount: number = 0;
     let allMainFieldsFilled: boolean = false; // Flag to check if email and password are truly filled
-
 
     if (emailInput && credentials.email) {
         emailInput.value = credentials.email;
         emailInput.dispatchEvent(new Event('input', {bubbles: true}));
         emailInput.dispatchEvent(new Event('change', {bubbles: true}));
-        console.log('Email field filled.');
         filledCount++;
     }
 
@@ -46,7 +47,6 @@ function fillLoginForm(credentials: LoginCredentials, attempt: number = 1) {
         passwordInput.value = credentials.password;
         passwordInput.dispatchEvent(new Event('input', {bubbles: true}));
         passwordInput.dispatchEvent(new Event('change', {bubbles: true}));
-        console.log('Password field filled.');
         filledCount++;
     }
 
@@ -54,7 +54,6 @@ function fillLoginForm(credentials: LoginCredentials, attempt: number = 1) {
         companyInput.value = credentials.company;
         companyInput.dispatchEvent(new Event('input', {bubbles: true}));
         companyInput.dispatchEvent(new Event('change', {bubbles: true}));
-        console.log('Company field filled.');
         filledCount++;
     }
 
@@ -62,7 +61,6 @@ function fillLoginForm(credentials: LoginCredentials, attempt: number = 1) {
         if (rememberMeToggle.checked !== credentials.rememberMe) {
             rememberMeToggle.click();
             rememberMeToggle.dispatchEvent(new Event('change', {bubbles: true}));
-            console.log('Remember Me toggle adjusted.');
         }
         filledCount++;
     }
@@ -74,25 +72,23 @@ function fillLoginForm(credentials: LoginCredentials, attempt: number = 1) {
 
     // Auto-click the Login button if main fields are filled and button exists
     if (loginButton && allMainFieldsFilled) {
-        console.log('Main fields filled. Attempting to click login button...');
         loginButton.click();
-        console.log('Login button clicked.');
-
         // After clicking, wait and check if the URL has changed.
         // This is an indicator (not perfect) of whether the login was "successful".
-        setTimeout(() => {
-            if (window.location.href === lastKnownUrl && attempt < MAX_LOGIN_ATTEMPTS) {
-                console.warn(`URL has not changed after attempt ${attempt}. Retrying in 3 seconds...`);
+        setTimeout((): void => {
+            if (window.location.href === lastKnownUrl && attempt < maxLoginAttempts) {
+                console.warn(`URL has not changed after attempt ${attempt}`);
                 loginAttempts++;
-                // If the URL hasn't changed, retry until max attempts are reached.
-                setTimeout(() => fillLoginForm(credentials, attempt + 1), 3000); // 3 seconds delay
+                // If the URL hasn't changed, retry until max attempts are reached
+                setTimeout((): void => fillLoginForm(credentials, attempt + 1), SECONDS_DELAY_BETWEEN_ATTEMPTS * 1000);
             } else {
                 if (window.location.href !== lastKnownUrl) {
                     console.log('Login successful! URL has changed.');
                 } else {
-                    console.error(`Login failed after ${MAX_LOGIN_ATTEMPTS} attempts. URL did not change.`);
+                    console.error(`Login failed after ${maxLoginAttempts} attempts. URL did not change`);
                 }
-                loginAttempts = 0; // Reset attempts regardless of final success/failure
+                // Reset attempts regardless of final success/failure
+                loginAttempts = 0;
             }
         }, 1500); // Wait 1.5 seconds after click to check URL
     } else {
@@ -109,7 +105,7 @@ function normalizeUrl(url: string): string {
         const urlObj = new URL(url);
         urlObj.hash = ''; // Remove fragments
         urlObj.search = ''; // Remove query parameters
-        let path = urlObj.pathname;
+        let path: string = urlObj.pathname;
         if (path.length > 1 && path.endsWith('/')) {
             path = path.substring(0, path.length - 1);
         }
@@ -122,8 +118,7 @@ function normalizeUrl(url: string): string {
 }
 
 // Main function that executes when the document is ready (for auto-login on page load)
-async function autoLoginOnPageLoad() {
-    console.log('Content script loaded.');
+async function autoLoginOnPageLoad(): Promise<void> {
     loginAttempts = 0; // Reset attempts on each page load
     lastKnownUrl = window.location.href; // Update reference URL
 
@@ -135,27 +130,35 @@ async function autoLoginOnPageLoad() {
         maxRetries: 3
     };
 
-    MAX_LOGIN_ATTEMPTS = settings.maxRetries || 3; // Set MAX_LOGIN_ATTEMPTS from stored settings
+    maxLoginAttempts = settings.maxRetries || DEFAULT_MAX_LOGIN_ATTEMPTS;
 
     const currentUrl: string = normalizeUrl(window.location.href);
     const targetUrlNormalized: string = normalizeUrl(settings.targetUrl);
 
     // This check remains for automatic execution when the page loads,
     // using the saved configuration.
-    if (settings.enabled && settings.targetUrl && (currentUrl.startsWith(targetUrlNormalized) || currentUrl === targetUrlNormalized)) {
-        console.log('Auto-login enabled for this URL on page load.');
+    if (settings.enabled && settings.targetUrl && (currentUrl.startsWith(
+        targetUrlNormalized) || currentUrl === targetUrlNormalized)) {
         if (settings.credentials && settings.credentials.email) {
             fillLoginForm(settings.credentials);
-        } else {
-            console.log('No saved credentials for auto-login on page load.');
         }
     } else {
-        console.log('Auto-login disabled or URL does not match on page load.');
+        if (settings.redirectEnabled && settings.redirectUrls && settings.redirectUrls.length > 0) {
+            const currentNormalized: string = normalizeUrl(window.location.href);
+            const match: boolean = settings.redirectUrls.some(url => normalizeUrl(url) === currentNormalized);
+            if (match) {
+                window.location.href = settings.targetUrl;
+                console.log("The url has been redirected");
+            }
+        }
     }
 }
 
 // Execute logic when the DOM is fully loaded
 if (document.readyState === 'loading') {
+    // Avoid memory leaks
+    document.removeEventListener('DOMContentLoaded', autoLoginOnPageLoad);
+    // Try login
     document.addEventListener('DOMContentLoaded', autoLoginOnPageLoad);
 } else {
     autoLoginOnPageLoad();
