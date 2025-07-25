@@ -141,7 +141,7 @@ async function autoLoginOnPageLoad(): Promise<void> {
     } else {
         if (settings.redirectEnabled && settings.redirectUrls && settings.redirectUrls.length > 0) {
             const currentNormalized: string = normalizeUrl(window.location.href);
-            const match: boolean = settings.redirectUrls.some(url => normalizeUrl(url) === currentNormalized);
+            const match: boolean = settings.redirectUrls.some((url: string): boolean => normalizeUrl(url) === currentNormalized);
             if (match) {
                 window.location.href = settings.targetUrl;
                 console.log("The url has been redirected");
@@ -154,48 +154,51 @@ async function autoLoginOnPageLoad(): Promise<void> {
         const currentUrl: string = normalizeUrl(window.location.href);
         const targetUrl2Normalized: string = normalizeUrl(settings.targetUrl2);
         if (currentUrl === targetUrl2Normalized) {
-            // Fill step 2 fields
-            if (settings.step2Username) {
-                const userInput = document.querySelector('input[type="text"].field-card-input-fake-auth') as HTMLInputElement
+            const interval: number = setInterval((): void => {
+                const userInput = document.querySelector(
+                        'input[type="text"].field-card-input-fake-auth') as HTMLInputElement
                     || document.querySelector('input[type="text"]') as HTMLInputElement;
-                if (userInput) {
+                const passInput = document.querySelector(
+                        'input[type="password"].field-card-input-fake-auth') as HTMLInputElement
+                    || document.querySelector('input[type="password"]') as HTMLInputElement;
+
+                if (!userInput || !passInput) {
+                    console.log('Waiting for step 2 input fields...');
+                    return;
+                }
+
+                // Fill username
+                if (settings.step2Username && userInput.value !== settings.step2Username) {
                     userInput.value = settings.step2Username;
                     userInput.dispatchEvent(new Event('input', {bubbles: true}));
                     userInput.dispatchEvent(new Event('change', {bubbles: true}));
                 }
-            }
 
-            if (settings.step2Password) {
-                const passInput = document.querySelector('input[type="password"].field-card-input-fake-auth') as HTMLInputElement
-                    || document.querySelector('input[type="password"]') as HTMLInputElement;
-                if (passInput) {
+                // Fill password
+                if (settings.step2Password && passInput.value !== settings.step2Password) {
                     passInput.value = settings.step2Password;
                     passInput.dispatchEvent(new Event('input', {bubbles: true}));
                     passInput.dispatchEvent(new Event('change', {bubbles: true}));
                 }
-            }
-            let elapsed: number = 0;
-            const interval: number = setInterval((): void => {
-                const buttons: HTMLButtonElement[] = Array.from(document.querySelectorAll('button'));
-                const acceptButton: HTMLButtonElement | undefined = buttons.find((btn: HTMLButtonElement): boolean =>
-                    btn.classList.contains('GreenButton') &&
-                    btn.textContent?.trim().toLowerCase() === 'aceptar'
-                );
-                if (acceptButton) {
+
+                // Find the Accept button
+                const acceptButton: HTMLButtonElement | undefined = Array.from(document.querySelectorAll('button'))
+                    .find((btn: HTMLButtonElement): boolean =>
+                        btn.classList.contains('GreenButton') &&
+                        btn.textContent?.trim().toLowerCase() === 'aceptar'
+                    );
+
+                const fieldsFilled: boolean = userInput.value === settings.step2Username && passInput.value === settings.step2Password;
+
+                if (fieldsFilled && acceptButton) {
+                    console.log('Step 2 ready. Clicking accept...');
                     setTimeout((): void => {
                         acceptButton.click();
                     }, step2AcceptSecondsDelay * 1000);
                     clearInterval(interval);
                 }
-                elapsed += 200;
-                if (elapsed > 5000) {
-                    clearInterval(interval);
-                    console.log("Didn't found step 2 accept btn");
-                }
-            }, 200);
-        } else {
-            console.log("Current url and target url 2 are not matching." +
-                "\nCurrent url: " + currentUrl + "\n Target url 2: " + targetUrl2Normalized);
+
+            }, 300);
         }
     }
 }

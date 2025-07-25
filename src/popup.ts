@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load saved settings and credentials
-    chrome.storage.sync.get(['extensionSettings'], (result) => {
+    chrome.storage.sync.get(['extensionSettings'], (result): void => {
         const settings: ExtensionSettings = result.extensionSettings || {
             enabled: false,
             targetUrl: '',

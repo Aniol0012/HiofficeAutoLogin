@@ -109,7 +109,7 @@ async function autoLoginOnPageLoad() {
     else {
         if (settings.redirectEnabled && settings.redirectUrls && settings.redirectUrls.length > 0) {
             const currentNormalized = normalizeUrl(window.location.href);
-            const match = settings.redirectUrls.some(url => normalizeUrl(url) === currentNormalized);
+            const match = settings.redirectUrls.some((url) => normalizeUrl(url) === currentNormalized);
             if (match) {
                 window.location.href = settings.targetUrl;
                 console.log("The url has been redirected");
@@ -127,7 +127,7 @@ async function autoLoginOnPageLoad() {
                 const passInput = document.querySelector('input[type="password"].field-card-input-fake-auth')
                     || document.querySelector('input[type="password"]');
                 if (!userInput || !passInput) {
-                    console.log('Waiting for step 2 fields...');
+                    console.log('Waiting for step 2 input fields...');
                     return;
                 }
                 // Fill username
@@ -142,9 +142,16 @@ async function autoLoginOnPageLoad() {
                     passInput.dispatchEvent(new Event('input', { bubbles: true }));
                     passInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
-                const ready = userInput.value === settings.step2Username && passInput.value === settings.step2Password;
-                if (ready) {
-                    console.log('Step 2 fields filled.');
+                // Find the Accept button
+                const acceptButton = Array.from(document.querySelectorAll('button'))
+                    .find((btn) => btn.classList.contains('GreenButton') &&
+                    btn.textContent?.trim().toLowerCase() === 'aceptar');
+                const fieldsFilled = userInput.value === settings.step2Username && passInput.value === settings.step2Password;
+                if (fieldsFilled && acceptButton) {
+                    console.log('Step 2 ready. Clicking accept...');
+                    setTimeout(() => {
+                        acceptButton.click();
+                    }, step2AcceptSecondsDelay * 1000);
                     clearInterval(interval);
                 }
             }, 300);
