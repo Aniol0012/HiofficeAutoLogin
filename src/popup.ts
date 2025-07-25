@@ -12,6 +12,8 @@ interface ExtensionSettings {
     maxRetries?: number;
     redirectEnabled?: boolean;
     redirectUrls?: string[];
+    step2Username?: string;
+    step2Password?: string;
 }
 
 const MESSAGE_DURATION: number = 3; // Message duration in seconds
@@ -30,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
     const clearButton = document.getElementById('clearButton') as HTMLButtonElement;
     const messageDiv = document.getElementById('message') as HTMLDivElement;
+    const step2UsernameInput = document.getElementById('step2Username') as HTMLInputElement;
+    const step2PasswordInput = document.getElementById('step2Password') as HTMLInputElement;
 
     // Function to display messages
     function showMessage(text: string, isError: boolean = false): void {
@@ -62,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
         rememberMeCheckbox.checked = settings.credentials.rememberMe || false;
         maxRetriesInput.value = (settings.maxRetries || 3).toString();
         redirectEnabledCheckbox.checked = settings.redirectEnabled || false;
+        step2UsernameInput.value = settings.step2Username || '';
+        step2PasswordInput.value = settings.step2Password || '';
 
         if (settings.redirectUrls && settings.redirectUrls.length > 0 && redirectUrlsContainer) {
             redirectUrlsContainer.innerHTML = '';
@@ -94,6 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const redirectUrlInputs = document.querySelectorAll('.redirectUrlInput') as NodeListOf<HTMLInputElement>;
         const redirectUrls = Array.from(redirectUrlInputs).map(input => input.value.trim()).filter(Boolean);
 
+        const step2UsernameInput = document.getElementById('step2Username') as HTMLInputElement;
+        const step2PasswordInput = document.getElementById('step2Password') as HTMLInputElement;
+
         const settings: ExtensionSettings = {
             enabled: extensionEnabledCheckbox.checked,
             targetUrl: targetUrlInput.value.trim(),
@@ -101,7 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
             credentials: credentials,
             maxRetries: parseInt(maxRetriesInput.value, 10) || 3,
             redirectEnabled: redirectEnabledCheckbox.checked,
-            redirectUrls: redirectUrls
+            redirectUrls: redirectUrls,
+            step2Username: step2UsernameInput.value.trim(),
+            step2Password: step2PasswordInput.value.trim()
         };
 
         // Validate fields for a better user experience, but allow saving empty fields

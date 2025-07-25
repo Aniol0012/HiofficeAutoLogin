@@ -13,6 +13,8 @@ interface ExtensionSettings {
     maxRetries?: number;
     redirectEnabled?: boolean;
     redirectUrls?: string[];
+    step2Username?: string;
+    step2Password?: string;
 }
 
 const DEFAULT_MAX_LOGIN_ATTEMPTS: number = 3; // Default value, will be overridden by settings
@@ -26,76 +28,70 @@ let lastKnownUrl: string = window.location.href; // Stores the URL to detect cha
 function fillLoginForm(credentials: LoginCredentials, attempt: number = 1): void {
     console.log(`Attempting to fill form and log in (Attempt ${attempt}/${maxLoginAttempts}):`, credentials);
 
-    // Selectors based on the image IDs/Placeholders
-    const emailInput = document.getElementById('eUsuario') as HTMLInputElement;
-    const passwordInput = document.getElementById('ePassword') as HTMLInputElement;
-    const companyInput = document.querySelector('input[placeholder="Empresa"]') as HTMLInputElement;
-    const rememberMeToggle = document.querySelector('input[type="checkbox"][role="switch"]') as HTMLInputElement;
-    const loginButton = document.querySelector('input[type="submit"][value="Login"]') as HTMLInputElement;
+    const interval: number = setInterval((): void => {
+        const emailInput = document.getElementById('eUsuario') as HTMLInputElement;
+        const passwordInput = document.getElementById('ePassword') as HTMLInputElement;
+        const companyInput = document.querySelector('input[placeholder="Empresa"]') as HTMLInputElement;
+        const rememberMeToggle = document.querySelector('input[type="checkbox"][role="switch"]') as HTMLInputElement;
+        const loginButton = Array.from(document.querySelectorAll('input[type="submit"]'))
+            .find(input => input instanceof HTMLInputElement && input.value.trim().toLowerCase() === 'login') as HTMLInputElement;
 
-    let filledCount: number = 0;
-    let allMainFieldsFilled: boolean = false; // Flag to check if email and password are truly filled
-
-    if (emailInput && credentials.email) {
-        emailInput.value = credentials.email;
-        emailInput.dispatchEvent(new Event('input', {bubbles: true}));
-        emailInput.dispatchEvent(new Event('change', {bubbles: true}));
-        filledCount++;
-    }
-
-    if (passwordInput && credentials.password) {
-        passwordInput.value = credentials.password;
-        passwordInput.dispatchEvent(new Event('input', {bubbles: true}));
-        passwordInput.dispatchEvent(new Event('change', {bubbles: true}));
-        filledCount++;
-    }
-
-    if (companyInput && credentials.company) {
-        companyInput.value = credentials.company;
-        companyInput.dispatchEvent(new Event('input', {bubbles: true}));
-        companyInput.dispatchEvent(new Event('change', {bubbles: true}));
-        filledCount++;
-    }
-
-    if (rememberMeToggle && credentials.rememberMe !== undefined) {
-        if (rememberMeToggle.checked !== credentials.rememberMe) {
-            rememberMeToggle.click();
-            rememberMeToggle.dispatchEvent(new Event('change', {bubbles: true}));
+        if (!emailInput || !passwordInput || !loginButton) {
+            console.log('Waiting for login elements to load...');
+            return;
         }
-        filledCount++;
-    }
 
-    // Check if main fields (email and password) are actually filled
-    if (emailInput?.value === credentials.email && passwordInput?.value === credentials.password) {
-        allMainFieldsFilled = true;
-    }
+        clearInterval(interval);
 
-    // Auto-click the Login button if main fields are filled and button exists
-    if (loginButton && allMainFieldsFilled) {
-        loginButton.click();
-        // After clicking, wait and check if the URL has changed.
-        // This is an indicator (not perfect) of whether the login was "successful".
-        setTimeout((): void => {
-            if (window.location.href === lastKnownUrl && attempt < maxLoginAttempts) {
-                console.warn(`URL has not changed after attempt ${attempt}`);
-                loginAttempts++;
-                // If the URL hasn't changed, retry until max attempts are reached
-                setTimeout((): void => fillLoginForm(credentials, attempt + 1), SECONDS_DELAY_BETWEEN_ATTEMPTS * 1000);
-            } else {
-                if (window.location.href !== lastKnownUrl) {
-                    console.log('Login successful! URL has changed.');
-                } else {
-                    console.error(`Login failed after ${maxLoginAttempts} attempts. URL did not change`);
-                }
-                // Reset attempts regardless of final success/failure
-                loginAttempts = 0;
+        if (credentials.email) {
+            emailInput.value = credentials.email;
+            emailInput.dispatchEvent(new Event('input', {bubbles: true}));
+            emailInput.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+
+        if (credentials.password) {
+            passwordInput.value = credentials.password;
+            passwordInput.dispatchEvent(new Event('input', {bubbles: true}));
+            passwordInput.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+
+        if (credentials.company && companyInput) {
+            companyInput.value = credentials.company;
+            companyInput.dispatchEvent(new Event('input', {bubbles: true}));
+            companyInput.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+
+        if (rememberMeToggle && credentials.rememberMe !== undefined) {
+            if (rememberMeToggle.checked !== credentials.rememberMe) {
+                rememberMeToggle.click();
+                rememberMeToggle.dispatchEvent(new Event('change', {bubbles: true}));
             }
-        }, 1500); // Wait 1.5 seconds after click to check URL
-    } else {
-        console.log('Could not click login button (button not found or fields not filled).');
-        console.log('Button status:', loginButton); // Check if loginButton is null
-        console.log('Main fields filled:', allMainFieldsFilled);
-    }
+        }
+
+        const mainFieldsFilled: boolean = emailInput.value === credentials.email && passwordInput.value === credentials.password;
+
+        if (loginButton && mainFieldsFilled) {
+            loginButton.click();
+            setTimeout((): void => {
+                if (window.location.href === lastKnownUrl && attempt < maxLoginAttempts) {
+                    console.warn(`URL has not changed after attempt ${attempt}`);
+                    setTimeout(() => fillLoginForm(credentials, attempt + 1), SECONDS_DELAY_BETWEEN_ATTEMPTS * 1000);
+                } else {
+                    if (window.location.href !== lastKnownUrl) {
+                        console.log('Login successful! URL has changed.');
+                    } else {
+                        console.error(`Login failed after ${maxLoginAttempts} attempts. URL did not change`);
+                    }
+                    loginAttempts = 0;
+                }
+            }, 1500);
+        } else {
+            console.log('Could not click login button (button not found or fields not filled).');
+            console.log('Button status:', loginButton);
+            console.log('Main fields filled:', mainFieldsFilled);
+        }
+
+    }, 300);
 }
 
 // Function to normalize URLs for better comparison
@@ -150,6 +146,56 @@ async function autoLoginOnPageLoad(): Promise<void> {
                 window.location.href = settings.targetUrl;
                 console.log("The url has been redirected");
             }
+        }
+    }
+
+    const step2AcceptSecondsDelay: number = 1;
+    if (settings.targetUrl2) {
+        const currentUrl: string = normalizeUrl(window.location.href);
+        const targetUrl2Normalized: string = normalizeUrl(settings.targetUrl2);
+        if (currentUrl === targetUrl2Normalized) {
+            // Fill step 2 fields
+            if (settings.step2Username) {
+                const userInput = document.querySelector('input[type="text"].field-card-input-fake-auth') as HTMLInputElement
+                    || document.querySelector('input[type="text"]') as HTMLInputElement;
+                if (userInput) {
+                    userInput.value = settings.step2Username;
+                    userInput.dispatchEvent(new Event('input', {bubbles: true}));
+                    userInput.dispatchEvent(new Event('change', {bubbles: true}));
+                }
+            }
+
+            if (settings.step2Password) {
+                const passInput = document.querySelector('input[type="password"].field-card-input-fake-auth') as HTMLInputElement
+                    || document.querySelector('input[type="password"]') as HTMLInputElement;
+                if (passInput) {
+                    passInput.value = settings.step2Password;
+                    passInput.dispatchEvent(new Event('input', {bubbles: true}));
+                    passInput.dispatchEvent(new Event('change', {bubbles: true}));
+                }
+            }
+            let elapsed: number = 0;
+            const interval: number = setInterval((): void => {
+                const buttons: HTMLButtonElement[] = Array.from(document.querySelectorAll('button'));
+                const acceptButton: HTMLButtonElement | undefined = buttons.find((btn: HTMLButtonElement): boolean =>
+                    btn.classList.contains('GreenButton') &&
+                    btn.textContent?.trim().toLowerCase() === 'aceptar'
+                );
+                if (acceptButton) {
+                    setTimeout((): void => {
+                        acceptButton.click();
+                    }, step2AcceptSecondsDelay * 1000);
+                    clearInterval(interval);
+                }
+                elapsed += 200;
+                if (elapsed > 5000) {
+                    clearInterval(interval);
+                    console.log("Didn't found step 2 accept btn");
+                }
+            }, 200);
+        } else {
+            console.log("Current url and target url 2 are not matching." +
+                "\nCurrent url: " + currentUrl + "\n Target url 2: " + targetUrl2Normalized);
         }
     }
 }
